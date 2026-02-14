@@ -65,7 +65,7 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel, retakeId }) => {
     try {
       const res = await api.post('/quiz/start', {
         userId: user?.id || 'anonymous',
-        quizType: retakeId ? 'retake' : 'naplan',
+        quizType: retakeId ? 'retake' : `year${yearLevel}`,
         mode: retakeId ? 'practice' : 'full',
         totalQuestions: total
       });

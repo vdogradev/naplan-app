@@ -14,7 +14,7 @@ interface ITopicResult {
 
 export interface IAttempt extends Document {
   userId: mongoose.Types.ObjectId;
-  quizType: 'year3' | 'year7' | 'multiplication';
+  quizType: 'year3' | 'year7' | 'multiplication' | 'retake';
   mode: 'full' | 'quick' | 'practice' | 'unlimited';
   questions: IQuestionResponse[];
   score: number;
@@ -43,7 +43,7 @@ const AttemptSchema: Schema = new Schema({
   quizType: {
     type: String,
     required: true,
-    enum: ['year3', 'year7', 'multiplication']
+    enum: ['year3', 'year7', 'multiplication', 'retake']
   },
   mode: {
     type: String,

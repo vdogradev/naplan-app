@@ -79,6 +79,7 @@ export class AIService {
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text().trim().replace(/```json/g, '').replace(/```/g, '');
+      logger.info(`AI Response received (${text.length} chars)`);
       
       try {
         const parsed = JSON.parse(text);

@@ -1,41 +1,51 @@
-import axios from 'axios';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import logger from '../utils/logger';
 import Question from '../models/Question';
 import { IAttempt } from '../models/Attempt';
 
 export class AIService {
-  private static apiKey = process.env.AI_API_KEY || '';
+  private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   /**
    * Generates a personalized analysis summary for a quiz attempt.
    */
   static async analyzeAttempt(attempt: IAttempt): Promise<string> {
     try {
+      if (!process.env.AI_API_KEY) {
+        return this.fallbackAnalyzeEffect(attempt);
+      }
+
       const topicGaps = Object.entries(attempt.topicResults)
         .filter(([_, result]) => result.wrong > 0)
         .map(([topic, result]) => `${topic} (${result.wrong} wrong)`)
         .join(', ');
 
-      const prompt = `Analyze this NAPLAN practice result for a Year ${attempt.quizType.replace('year', '')} student:
+      const prompt = `As an expert Australian NAPLAN tutor, analyze this Year ${attempt.quizType.replace('year', '')} Numeracy practice result:
       - Overall Accuracy: ${attempt.accuracy}%
-      - Correct Answers: ${attempt.correctAnswers}/${attempt.totalQuestions}
-      - Topic Gaps: ${topicGaps || 'None (Perfect Score!)'}
+      - Score: ${attempt.correctAnswers}/${attempt.totalQuestions}
+      - Topic Performance: ${topicGaps || 'Perfect across all topics!'}
       
-      Provide a 3-sentence encouraging summary and pinpoint exactly what they should study next.`;
+      Provide a personalized, encouraging feedback summary (max 3 sentences). 
+      Be specific about what they should practice next based on their topic gaps. 
+      Use Australian English (e.g., 'practise' for the verb).`;
 
-      if (!this.apiKey) {
-        return `Great effort! You achieved ${attempt.accuracy}% accuracy. You showed strong skills, but you might want to review ${topicGaps || 'your general logic'} to improve further. Keep practicing!`;
-      }
-
-      // Placeholder for actual AI call (e.g., OpenAI/Gemini)
-      // const response = await axios.post('...', { prompt });
-      // return response.data.summary;
-      
-      return "AI Summary: Your performance was excellent in geometry, but number logic needs attention. Focus on multi-step word problems involving multiplication.";
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim();
     } catch (error) {
       logger.error('AI Analysis error:', error);
-      return "Unable to generate AI analysis at this time.";
+      return this.fallbackAnalyzeEffect(attempt);
     }
+  }
+
+  private static fallbackAnalyzeEffect(attempt: IAttempt): string {
+    const topicGaps = Object.entries(attempt.topicResults)
+        .filter(([_, result]) => result.wrong > 0)
+        .map(([topic]) => topic)
+        .join(', ');
+    
+    return `Great effort! You achieved ${attempt.accuracy}% accuracy. You showed strong skills, but you might want to practise ${topicGaps || 'your general logic'} to improve further. Keep it up!`;
   }
 
   /**
@@ -43,26 +53,50 @@ export class AIService {
    */
   static async generateQuestion(yearLevel: number, topic: string) {
     try {
-      const prompt = `Generate a Year ${yearLevel} NAPLAN ${topic} question in JSON format:
-      {
-        "question": "...",
-        "choices": ["...", "..."],
-        "correctAnswer": "...",
-        "explanation": "...",
-        "difficulty": "medium"
-      }`;
-
-      if (!this.apiKey) {
-        // Fallback: Pick a random existing question or return a structured mock
-        const existing = await Question.findOne({ yearLevel, topic, isActive: true });
-        return existing;
+      if (!process.env.AI_API_KEY) {
+        return this.fallbackGetQuestion(yearLevel, topic);
       }
 
-      // Call AI here...
-      return null;
+      const prompt = `Generate a high-quality Year ${yearLevel} NAPLAN Numeracy question on the topic of "${topic}".
+      The question MUST be in valid JSON format only, with no extra text.
+      Strictly follow this schema:
+      {
+        "question": "The question text",
+        "type": "multiple" or "text",
+        "choices": ["Option A", "Option B", "Option C", "Option D"] (only if type is multiple),
+        "correctAnswer": "The exact correct answer string",
+        "acceptableAnswers": ["Alternative 1", "Alternative 2"],
+        "explanation": "Detailed pedagogical explanation in Australian English",
+        "difficulty": "easy", "medium", or "hard",
+        "points": 10, 15, or 20
+      }
+      
+      Ensure the question is authentic to NAPLAN standards and curriculum-aligned.`;
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text().trim().replace(/```json/g, '').replace(/```/g, '');
+      
+      try {
+        const parsed = JSON.parse(text);
+        return {
+          ...parsed,
+          yearLevel,
+          topic,
+          _id: new (require('mongoose').Types.ObjectId)() // Temporary ID for frontend
+        };
+      } catch (parseError) {
+        logger.error('AI Parse error:', text);
+        return this.fallbackGetQuestion(yearLevel, topic);
+      }
     } catch (error) {
-      logger.error('AI Generation error:', error);
-      throw error;
+      logger.error('AI Question Generation error:', error);
+      return this.fallbackGetQuestion(yearLevel, topic);
     }
+  }
+
+  private static async fallbackGetQuestion(yearLevel: number, topic: string) {
+    const existing = await Question.findOne({ yearLevel, topic });
+    return existing;
   }
 }

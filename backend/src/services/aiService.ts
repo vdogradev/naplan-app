@@ -8,9 +8,9 @@ export class AIService {
   // Use @google/generative-ai (CommonJS compatible)
   private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
   
-  // Explicitly use v1 API for gemini-1.5-flash to avoid regional v1beta 404s
+  // Explicitly use gemini-2.0-flash which is verified available in the user project
   private static model = AIService.genAI.getGenerativeModel(
-    { model: "gemini-1.5-flash" },
+    { model: "gemini-2.0-flash" },
     { apiVersion: 'v1' }
   );
 

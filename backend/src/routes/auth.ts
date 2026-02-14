@@ -20,7 +20,7 @@ const generateToken = (userId: string): string => {
 router.post('/register', [
   body('username').trim().isLength({ min: 2, max: 20 }).withMessage('Username must be 2-20 characters'),
   body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('password').isLength({ min: 5 }).withMessage('Password must be at least 5 characters'),
   body('yearLevel').optional().isIn([3, 7]).withMessage('Year level must be 3 or 7')
 ], async (req: Request, res: Response) => {
   try {

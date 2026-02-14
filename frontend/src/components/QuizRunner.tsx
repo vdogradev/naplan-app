@@ -178,10 +178,19 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel, retakeId }) => {
     </div>
   );
 
+  if (questions.length === 0) return (
+    <div className="text-center p-20">
+      <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+      <h3 className="text-2xl font-bold mb-4">Preparation Required</h3>
+      <p className="text-slate-500 mb-8">This year level is still being prepared by our AI. Try Year 3 or 7 for full mock tests.</p>
+      <button onClick={() => navigate('/ai-practice')} className="btn-premium">Back to Hub</button>
+    </div>
+  );
+
   const currentQ = questions[currentIndex];
-  const isAnswered = currentQ.type === 'multiple' 
-    ? selectedChoices[currentQ._id] !== undefined 
-    : userAnswers[currentQ._id]?.trim().length > 0;
+  const isAnswered = currentQ?.type === 'multiple' 
+    ? selectedChoices[currentQ?._id] !== undefined 
+    : userAnswers[currentQ?._id]?.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-[#F0F2F5] pb-20">
@@ -191,7 +200,9 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel, retakeId }) => {
           <Monitor className="w-6 h-6 text-blue-400" />
           <div className="h-6 w-[1px] bg-white/20"></div>
           <div>
-            <span className="text-xs uppercase tracking-widest font-black text-blue-400">NAPLAN Online</span>
+            <span className="text-xs uppercase tracking-widest font-black text-blue-400">
+              NAPLAN Online {isAiMode && "• AI GENERATED"}
+            </span>
             <h1 className="text-sm font-bold opacity-80">Year {yearLevel} Numeracy</h1>
           </div>
         </div>

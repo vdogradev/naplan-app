@@ -29,12 +29,8 @@ const ResultAnalysis = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // In a real app, you'd have a GET /api/quiz/attempt/:id
-        // For now, we'll fetch from the user's history or similar
-        // Let's assume we can get it via a proxy or update the backend
-        const res = await api.get(`/stats/user-overview/${JSON.parse(localStorage.getItem('auth-storage') || '{}').state?.user?.id}`);
-        const found = res.data.history.find((a: any) => a._id === attemptId);
-        setAttempt(found);
+        const res = await api.get(`/quiz/attempt/${attemptId}`);
+        setAttempt(res.data.attempt);
         
         // Fetch AI analysis
         const aiRes = await api.post(`/ai/analyze-attempt/${attemptId}`);

@@ -1,16 +1,18 @@
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 import logger from '../utils/logger';
 import Question from '../models/Question';
 import { IAttempt } from '../models/Attempt';
 
 export class AIService {
-  private static client = new GoogleGenAI({
-    apiKey: process.env.AI_API_KEY || ''
-  });
-
-  // Default model for generation
-  private static DEFAULT_MODEL = "gemini-1.5-flash";
+  // Use @google/generative-ai (CommonJS compatible)
+  private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
+  
+  // Explicitly use v1 API for gemini-1.5-flash to avoid regional v1beta 404s
+  private static model = AIService.genAI.getGenerativeModel(
+    { model: "gemini-1.5-flash" },
+    { apiVersion: 'v1' }
+  );
 
   /**
    * Diagnostic to list available models for the current API key.
@@ -22,7 +24,7 @@ export class AIService {
       const response = await axios.get(url);
       logger.info('Available Models fetched via Axios');
       return {
-        deployVersion: 'v1.0.2-genai-sdk',
+        deployVersion: 'v1.0.3-revert-legacy-v1-api',
         data: response.data
       };
     } catch (e: any) {
@@ -55,12 +57,9 @@ export class AIService {
       Be specific about what they should practice next based on their topic gaps. 
       Use Australian English (e.g., 'practise' for the verb).`;
 
-      const result = await this.client.models.generateContent({
-        model: this.DEFAULT_MODEL,
-        contents: prompt
-      });
-
-      return result.text || this.fallbackAnalyzeEffect(attempt);
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      return response.text().trim();
     } catch (error) {
       logger.error('AI Analysis error:', error);
       return this.fallbackAnalyzeEffect(attempt);
@@ -102,16 +101,9 @@ export class AIService {
       
       Ensure the question is authentic to NAPLAN standards and curriculum-aligned.`;
 
-      const result = await this.client.models.generateContent({
-        model: this.DEFAULT_MODEL,
-        contents: prompt
-      });
-
-      const text = (result.text || '').trim().replace(/```json/g, '').replace(/```/g, '');
-      if (!text) {
-        logger.warn('AI returned empty text');
-        return this.fallbackGetQuestion(yearLevel, topic);
-      }
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text().trim().replace(/```json/g, '').replace(/```/g, '');
       logger.info(`AI Response received (${text.length} chars)`);
       
       try {

@@ -61,6 +61,27 @@ router.post('/start', async (req, res) => {
   }
 });
 
+// @route   GET /api/quiz/attempt/:attemptId
+// @desc    Get a specific quiz attempt
+router.get('/attempt/:attemptId', async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const attempt = await Attempt.findById(attemptId).populate('questions.questionId');
+    
+    if (!attempt) {
+      return res.status(404).json({ success: false, message: 'Attempt not found' });
+    }
+
+    res.json({
+      success: true,
+      attempt
+    });
+  } catch (error) {
+    logger.error('Get attempt error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @route   POST /api/quiz/submit/:attemptId
 // @desc    Submit quiz answers
 router.post('/submit/:attemptId', async (req, res) => {

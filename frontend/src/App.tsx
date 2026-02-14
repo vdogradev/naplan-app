@@ -8,6 +8,7 @@ import AIRecommendations from './pages/AIRecommendations'
 import Stats from './pages/Stats'
 import Login from './pages/Login'
 import ResultAnalysis from './pages/ResultAnalysis'
+import AIPractice from './pages/AIPractice'
 
 function App() {
   return (
@@ -17,11 +18,12 @@ function App() {
         <Route path="year3" element={<Year3Quiz />} />
         <Route path="year7" element={<Year7Quiz />} />
         <Route path="multiplication" element={<Multiplication />} />
+        <Route path="ai-practice" element={<AIPractice />} />
         <Route path="ai-guidance" element={<AIRecommendations />} />
         <Route path="stats" element={<Stats />} />
         <Route path="login" element={<Login />} />
         <Route path="result/:attemptId" element={<ResultAnalysis />} />
-        <Route path="quiz/retake/:attemptId" element={<Year3Quiz />} /> {/* Generalized quiz runner will handle this */}
+        <Route path="quiz/retake/:attemptId" element={<Year3Quiz />} />
       </Route>
     </Routes>
   )

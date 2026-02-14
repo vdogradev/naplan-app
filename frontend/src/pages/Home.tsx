@@ -23,7 +23,7 @@ function Home() {
       title: 'Infinite AI Practice',
       description: 'Never run out of questions. Let our AI generate unique, contextually relevant NAPLAN challenges for you.',
       features: ['Real-time Generation', 'Personalized Difficulty', 'Infinite Bank'],
-      path: '/year3',
+      path: '/ai-practice',
       theme: 'from-rose-500 to-pink-600',
       tag: 'Generative'
     },

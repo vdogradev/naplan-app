@@ -23,24 +23,28 @@ function Navigation() {
 
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <div className="flex items-center gap-6">
-              <div className="hidden lg:flex items-center gap-6 mr-4 border-r border-slate-100 pr-6">
-                <Link to="/profile" className="nav-link flex items-center gap-2">
-                  <User className="w-4 h-4" /> Profile
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex items-center gap-4 mr-2 border-r border-slate-100 pr-4">
+                <Link to="/profile" className="nav-link flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg transition-all" title="Profile">
+                  <User className="w-5 h-5" />
                 </Link>
-                <Link to="/account" className="nav-link flex items-center gap-2">
-                  <Settings className="w-4 h-4" /> Settings
+                <Link to="/account" className="nav-link flex items-center gap-2 p-2 hover:bg-slate-50 rounded-lg transition-all" title="Settings">
+                  <Settings className="w-5 h-5" />
                 </Link>
                 {(user?.role === 'admin' || user?.role === 'super-admin') && (
-                  <Link to="/admin" className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-xs hover:bg-indigo-100 transition-all flex items-center gap-2">
-                    <Shield className="w-4 h-4" /> Admin Console
+                  <Link to="/admin" className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-xs hover:bg-indigo-100 transition-all flex items-center gap-2 shadow-sm border border-indigo-100">
+                    <Shield className="w-4 h-4" /> <span className="hidden lg:inline">Admin</span>
                   </Link>
                 )}
               </div>
 
               <div className="hidden sm:flex flex-col items-end">
-                <span className="text-sm font-bold text-slate-900">{user?.username}</span>
-                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">
+                <span className="text-sm font-bold text-slate-900 leading-none mb-1">{user?.username}</span>
+                <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest leading-none ${
+                  user?.role === 'super-admin' ? 'bg-rose-50 text-rose-600' :
+                  user?.role === 'admin' ? 'bg-indigo-50 text-indigo-600' :
+                  'bg-blue-50 text-blue-600'
+                }`}>
                   {user?.role || 'Student'}
                 </span>
               </div>

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
-import { Question, QuizAttempt } from '../types';
-import { CheckCircle2, XCircle, Timer, AlertCircle, ArrowRight, RotateCcw } from 'lucide-react';
+import { Question } from '../types';
+import { CheckCircle2, XCircle, AlertCircle, ArrowRight, RotateCcw, Loader2, Sparkles, Trophy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuizRunnerProps {
   yearLevel: number;
@@ -30,16 +31,16 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const response = await axios.get(`${apiUrl}/quiz/questions/${yearLevel}`);
+      setError(null);
+      const response = await api.get(`/quiz/questions/${yearLevel}`);
       if (response.data.success) {
         setQuestions(response.data.questions);
         startQuiz(response.data.questions.length);
       } else {
-        setError('Failed to load questions');
+        setError('Failed to load questions. Please try again.');
       }
     } catch (err) {
-      setError('Error connecting to server');
+      setError('Connection error. Please check your internet and try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -48,8 +49,7 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
 
   const startQuiz = async (total: number) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-      const res = await axios.post(`${apiUrl}/quiz/start`, {
+      const res = await api.post('/quiz/start', {
         userId: user?.id || 'anonymous',
         quizType: 'naplan',
         mode: 'practice',
@@ -111,8 +111,7 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
     setCompleted(true);
     if (attemptId) {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        await axios.post(`${apiUrl}/quiz/submit/${attemptId}`, {
+        await api.post(`/quiz/submit/${attemptId}`, {
           answers: responses
         });
       } catch (err) {
@@ -121,127 +120,173 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
     }
   };
 
-  if (loading) return <div className="text-center p-10">Loading your questions...</div>;
-  if (error) return <div className="text-center p-10 text-red-600 font-bold">{error}</div>;
-  if (questions.length === 0) return <div className="text-center p-10">No questions found for this level yet.</div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center p-20 space-y-4">
+      <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
+      <p className="text-slate-500 font-bold text-xl animate-pulse">Initializing Assessment...</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-10 text-center max-w-lg mx-auto">
+      <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+      <h3 className="text-2xl font-bold text-red-900 mb-2">Oops!</h3>
+      <p className="text-red-700 mb-6 font-medium">{error}</p>
+      <button onClick={fetchQuestions} className="btn-premium">Try Again</button>
+    </div>
+  );
 
   if (completed) {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-xl max-w-2xl mx-auto text-center">
-        <div className="mb-6">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-12 h-12 text-green-600" />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-[3rem] p-12 shadow-2xl max-w-3xl mx-auto text-center border border-slate-100"
+      >
+        <div className="mb-8">
+          <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Trophy className="w-12 h-12 text-yellow-600" />
           </div>
-          <h2 className="text-3xl font-bold text-blue-900">Quiz Complete!</h2>
+          <h2 className="text-4xl font-extrabold text-slate-900 mb-2">Assessment Results</h2>
+          <p className="text-slate-500 font-medium">Great effort on completing your year {yearLevel} practice!</p>
         </div>
         
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-blue-50 p-6 rounded-xl">
-            <div className="text-sm text-blue-600 font-semibold mb-1 uppercase">Final Score</div>
-            <div className="text-4xl font-bold text-blue-900">{score} / {questions.length}</div>
+        <div className="grid grid-cols-2 gap-6 mb-10">
+          <div className="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
+            <div className="text-xs text-blue-600 font-black uppercase tracking-widest mb-2">Final Score</div>
+            <div className="text-5xl font-black text-blue-900">{score} <span className="text-2xl text-blue-400 font-bold">/ {questions.length}</span></div>
           </div>
-          <div className="bg-green-50 p-6 rounded-xl">
-            <div className="text-sm text-green-600 font-semibold mb-1 uppercase">Accuracy</div>
-            <div className="text-4xl font-bold text-green-900">{Math.round((score / questions.length) * 100)}%</div>
+          <div className="bg-indigo-50 p-8 rounded-[2rem] border border-indigo-100">
+            <div className="text-xs text-indigo-600 font-black uppercase tracking-widest mb-2">Accuracy</div>
+            <div className="text-5xl font-black text-indigo-900">{Math.round((score / questions.length) * 100)}%</div>
           </div>
         </div>
 
         <button 
           onClick={() => window.location.reload()}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all flex items-center justify-center mx-auto gap-2"
+          className="btn-premium flex items-center justify-center mx-auto gap-2"
         >
           <RotateCcw className="w-5 h-5" />
-          Try Again
+          New Assessment
         </button>
-      </div>
+      </motion.div>
     );
   }
 
   const currentQ = questions[currentIndex];
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-xl max-w-2xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-bold capitalize">
-          <AlertCircle className="w-4 h-4" />
-          {currentQ.topic}
+    <div className="max-w-3xl mx-auto">
+      {/* Progress Header */}
+      <div className="flex justify-between items-end mb-8 px-2">
+        <div>
+          <span className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] block mb-1">Section: {currentQ.topic}</span>
+          <h3 className="text-lg font-bold text-slate-400">Question {currentIndex + 1} of {questions.length}</h3>
         </div>
-        <div className="text-gray-500 font-semibold">
-          Question {currentIndex + 1} of {questions.length}
-        </div>
-      </div>
-
-      <h3 className="text-2xl font-bold text-blue-900 mb-8 leading-relaxed">
-        {currentQ.question}
-      </h3>
-
-      <div className="space-y-4 mb-8">
-        {currentQ.type === 'multiple' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {currentQ.choices?.map((choice, idx) => (
-              <button
-                key={idx}
-                disabled={feedback !== null}
-                onClick={() => setSelectedChoice(idx)}
-                className={`p-4 text-left border-2 rounded-xl font-bold transition-all ${
-                  selectedChoice === idx 
-                    ? 'border-blue-600 bg-blue-50 text-blue-900' 
-                    : 'border-gray-100 hover:border-blue-200 text-gray-700'
-                } ${feedback && currentQ.choices![idx] === currentQ.correctAnswer ? 'border-green-500 bg-green-50' : ''}`}
-              >
-                {choice}
-              </button>
-            ))}
+        <div className="text-right">
+          <div className="text-sm font-bold text-slate-400 mb-1">Progress</div>
+          <div className="w-32 h-3 bg-slate-100 rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+              className="h-full bg-blue-600"
+            />
           </div>
-        ) : (
-          <input
-            type="text"
-            disabled={feedback !== null}
-            value={userAnswer}
-            onChange={(e) => setUserAnswer(e.target.value)}
-            placeholder="Type your answer here..."
-            className="w-full p-4 text-xl border-2 border-gray-100 rounded-xl focus:border-blue-600 focus:outline-none font-bold"
-          />
-        )}
+        </div>
       </div>
 
-      {feedback && (
-        <div className={`p-6 rounded-xl mb-8 flex items-start gap-4 ${feedback.isCorrect ? 'bg-green-50 border-2 border-green-200' : 'bg-red-50 border-2 border-red-200'}`}>
-          {feedback.isCorrect ? (
-            <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
+      <motion.div 
+        key={currentIndex}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 relative overflow-hidden"
+      >
+        {/* Subtle background decoration */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-50 rounded-full opacity-50"></div>
+        
+        <h3 className="text-3xl font-extrabold text-slate-900 mb-10 leading-tight relative z-10">
+          {currentQ.question}
+        </h3>
+
+        <div className="space-y-4 mb-10 relative z-10">
+          {currentQ.type === 'multiple' ? (
+            <div className="grid grid-cols-1 gap-3">
+              {currentQ.choices?.map((choice, idx) => (
+                <button
+                  key={idx}
+                  disabled={feedback !== null}
+                  onClick={() => setSelectedChoice(idx)}
+                  className={`group p-6 text-left border-2 rounded-2xl font-bold transition-all flex items-center gap-4 ${
+                    selectedChoice === idx 
+                      ? 'border-blue-600 bg-blue-50 text-blue-900' 
+                      : 'border-slate-50 hover:border-blue-200 text-slate-700 hover:bg-slate-50'
+                  } ${feedback && currentQ.choices![idx] === currentQ.correctAnswer ? 'border-green-500 bg-green-50 text-green-900' : ''}`}
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-black ${
+                    selectedChoice === idx ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600'
+                  }`}>
+                    {String.fromCharCode(65 + idx)}
+                  </div>
+                  {choice}
+                </button>
+              ))}
+            </div>
           ) : (
-            <XCircle className="w-6 h-6 text-red-600 shrink-0" />
+            <input
+              type="text"
+              disabled={feedback !== null}
+              value={userAnswer}
+              onChange={(e) => setUserAnswer(e.target.value)}
+              placeholder="Your answer..."
+              className="w-full p-6 text-2xl border-4 border-slate-50 rounded-[2rem] focus:border-blue-600 focus:outline-none font-bold text-slate-800 transition-all"
+            />
           )}
-          <div>
-            <div className={`font-bold mb-1 ${feedback.isCorrect ? 'text-green-800' : 'text-red-800'}`}>
-              {feedback.isCorrect ? 'Correct!' : 'Incorrect'}
-            </div>
-            <div className="text-gray-700 leading-relaxed">
-              {feedback.message}
-            </div>
-          </div>
         </div>
-      )}
 
-      <div className="flex justify-end">
-        {!feedback ? (
-          <button 
-            disabled={(currentQ.type === 'multiple' && selectedChoice === null) || (currentQ.type === 'text' && !userAnswer.trim())}
-            onClick={handleCheckAnswer}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-full transition-all"
-          >
-            Check Answer
-          </button>
-        ) : (
-          <button 
-            onClick={nextQuestion}
-            className="bg-blue-900 hover:bg-black text-white font-bold py-3 px-8 rounded-full transition-all flex items-center gap-2"
-          >
-            {currentIndex + 1 === questions.length ? 'Finish Quiz' : 'Next Question'}
-            <ArrowRight className="w-5 h-5" />
-          </button>
-        )}
-      </div>
+        <AnimatePresence>
+          {feedback && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              className={`p-8 rounded-[2rem] mb-8 flex items-start gap-5 border-2 ${
+                feedback.isCorrect ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'
+              }`}
+            >
+              <div className={`p-3 rounded-2xl ${feedback.isCorrect ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                {feedback.isCorrect ? <Sparkles className="w-6 h-6" /> : <AlertCircle className="w-6 h-6" />}
+              </div>
+              <div>
+                <div className={`text-xl font-black mb-1 ${feedback.isCorrect ? 'text-green-900' : 'text-red-900'}`}>
+                  {feedback.isCorrect ? 'Terrific!' : 'Not Quite'}
+                </div>
+                <div className="text-slate-600 font-medium leading-relaxed">
+                  {feedback.message}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex justify-end relative z-10">
+          {!feedback ? (
+            <button 
+              disabled={(currentQ.type === 'multiple' && selectedChoice === null) || (currentQ.type === 'text' && !userAnswer.trim())}
+              onClick={handleCheckAnswer}
+              className="btn-premium"
+            >
+              Verify Answer
+            </button>
+          ) : (
+            <button 
+              onClick={nextQuestion}
+              className="bg-slate-900 hover:bg-black text-white font-bold py-4 px-10 rounded-2xl transition-all flex items-center gap-3 shadow-xl"
+            >
+              {currentIndex + 1 === questions.length ? 'See Results' : 'Next Question'}
+              <ArrowRight className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 };

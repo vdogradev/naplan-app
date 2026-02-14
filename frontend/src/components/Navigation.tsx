@@ -1,92 +1,50 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { Brain, User, Settings, LogOut } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
-import { Brain, Menu, X } from 'lucide-react'
-import { useState } from 'react'
 
 function Navigation() {
-  const location = useLocation()
-  const { user, logout } = useAuthStore()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-
-  const navLinks = [
-    { path: '/', label: 'Home' },
-    { path: '/year3', label: 'Year 3' },
-    { path: '/year7', label: 'Year 7' },
-    { path: '/multiplication', label: 'Practice' },
-    { path: '/ai-guidance', label: 'AI Guidance' },
-  ]
+  const { user, logout, isAuthenticated } = useAuthStore()
 
   return (
-    <nav className="bg-white shadow-lg">
-      <div className="container mx-auto px-4">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 text-blue-900 font-bold text-xl">
-            <Brain className="w-8 h-8" />
-            <span>NAPLAN Hub</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`text-sm font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? 'text-blue-600'
-                    : 'text-gray-600 hover:text-blue-600'
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-            
-            {user ? (
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{user.avatar}</span>
-                <span className="text-sm font-medium">{user.username}</span>
-                <button
-                  onClick={logout}
-                  className="text-sm text-red-600 hover:text-red-700"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-              >
-                Login
-              </Link>
-            )}
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+      <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2 group">
+          <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg group-hover:rotate-12 transition-transform">
+            <Brain className="w-6 h-6" />
           </div>
+          <span className="text-xl font-black text-slate-900 tracking-tight">NAPLAN<span className="text-blue-600">HUB</span></span>
+        </Link>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+        <div className="hidden md:flex items-center gap-8">
+          <Link to="/" className="nav-link">Home</Link>
+          <Link to="/stats" className="nav-link">Analytics</Link>
+          <Link to="/ai-guidance" className="nav-link">AI Support</Link>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className="block py-2 text-gray-600 hover:text-blue-600"
-                onClick={() => setIsMenuOpen(false)}
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <div className="flex items-center gap-4">
+              <div className="hidden sm:flex flex-col items-end">
+                <span className="text-sm font-bold text-slate-900">{user?.username}</span>
+                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">Pro Plan</span>
+              </div>
+              <button 
+                onClick={logout}
+                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                title="Logout"
               >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        )}
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
+          ) : (
+            <Link 
+              to="/login" 
+              className="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg active:scale-95"
+            >
+              Sign In
+            </Link>
+          )}
+        </div>
       </div>
     </nav>
   )

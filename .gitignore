@@ -41,8 +41,8 @@ $RECYCLE.BIN/
 
 # Local environment variables
 .env
+.env.local
 
-# Python Salesforce Functions
-**/__pycache__/
-**/.venv/
-**/venv/
+# Build outputs
+dist/
+**/dist/

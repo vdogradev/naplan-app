@@ -3,11 +3,15 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/assets/(.*)",
-      "destination": "/assets/$1"
+      "source": "/(css|js|img|assets|fonts)/(.*)",
+      "destination": "/$1/$2"
     },
     {
-      "source": "/((?!assets/).*)",
+      "source": "/(.*)\\.(ico|png|svg|jpg|jpeg|gif|json|txt|map)",
+      "destination": "/$1.$2"
+    },
+    {
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]

@@ -108,6 +108,8 @@ router.post('/login', [
     // Generate token
     const token = generateToken(user._id.toString(), user.role);
 
+    logger.info(`🔑 Login successful: ${user.username} (Role: ${user.role})`);
+
     res.json({
       success: true,
       message: 'Login successful',
@@ -116,6 +118,7 @@ router.post('/login', [
         id: user._id,
         username: user.username,
         email: user.email,
+        role: user.role,
         avatar: user.avatar,
         yearLevel: user.yearLevel,
         preferences: user.preferences

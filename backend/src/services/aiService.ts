@@ -111,27 +111,39 @@ export class AIService {
         "type": "multiple" or "text",
         "choices": ["Option A", "Option B", "Option C", "Option D"] (only if type is multiple),
         "correctAnswer": "The exact correct answer string",
-        "acceptableAnswers": ["Alternative 1", "Alternative 2"],
+        "acceptableAnswers": ["The correct answer", "Alternative 1", "Alternative 2"],
         "explanation": "Detailed pedagogical explanation in Australian English",
         "difficulty": "easy", "medium", or "hard",
         "points": 10, 15, or 20
       }
       
+      CRITICAL: Ensure "correctAnswer" is EXACTLY one of the strings in the "acceptableAnswers" array.
       Ensure the question is authentic to NAPLAN standards and curriculum-aligned.`;
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      const text = response.text().trim().replace(/```json/g, '').replace(/```/g, '');
+      const text = (response.text() || '').trim().replace(/```json/g, '').replace(/```/g, '');
+      
+      if (!text) {
+        logger.warn('AI returned empty text');
+        return this.fallbackGetQuestion(yearLevel, topic);
+      }
       logger.info(`AI Response received (${text.length} chars)`);
       
       try {
         const parsed = JSON.parse(text);
-        return {
+        
+        // Persist the question to the database so it can be found during submission
+        const newQuestion = await Question.create({
           ...parsed,
           yearLevel,
           topic,
-          _id: new (require('mongoose').Types.ObjectId)() // Temporary ID for frontend
-        };
+          isActive: true,
+          tags: ['ai-generated', `year-${yearLevel}`]
+        });
+
+        logger.info(`AI Question persisted to DB: ${newQuestion._id}`);
+        return newQuestion;
       } catch (parseError) {
         logger.error('AI Parse error:', text);
         return this.fallbackGetQuestion(yearLevel, topic);

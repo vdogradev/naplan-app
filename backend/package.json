@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/scripts/seedQuestions.ts",
+    "promote-user": "tsx src/scripts/promoteUser.ts",
     "test": "jest"
   },
   "dependencies": {

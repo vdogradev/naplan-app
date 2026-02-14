@@ -6,8 +6,8 @@ import { IAttempt } from '../models/Attempt';
 
 export class AIService {
   private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
-  // Using 'gemini-1.5-flash' which is the standard model name
-  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // Using 'gemini-pro' as it has broader availability across API versions
+  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-pro" });
 
   /**
    * Diagnostic to list available models for the current API key.

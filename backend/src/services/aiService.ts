@@ -5,8 +5,8 @@ import { IAttempt } from '../models/Attempt';
 
 export class AIService {
   private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
-  // Using gemini-1.5-flash-latest for broader compatibility
-  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+  // Using 'gemini-1.5-flash' which is the standard model name
+  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   /**
    * Generates a personalized analysis summary for a quiz attempt.

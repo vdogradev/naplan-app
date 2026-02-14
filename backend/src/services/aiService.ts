@@ -18,7 +18,10 @@ export class AIService {
       const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.AI_API_KEY}`;
       const response = await axios.get(url);
       logger.info('Available Models fetched via Axios');
-      return response.data;
+      return {
+        deployVersion: 'v1.0.1-gemini-pro',
+        data: response.data
+      };
     } catch (e: any) {
       logger.error('Failed to list models via Axios:', e.message);
       return { error: e.message, status: e.response?.status };

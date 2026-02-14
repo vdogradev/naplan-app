@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IQuestion extends Document {
-  yearLevel: 3 | 7;
+  yearLevel: 3 | 5 | 7 | 9;
   topic: 'number' | 'measurement' | 'geometry' | 'statistics';
   type: 'multiple' | 'text' | 'interactive';
   question: string;
@@ -22,7 +22,7 @@ const QuestionSchema: Schema = new Schema({
   yearLevel: {
     type: Number,
     required: true,
-    enum: [3, 7]
+    enum: [3, 5, 7, 9]
   },
   topic: {
     type: String,

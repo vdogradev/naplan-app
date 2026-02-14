@@ -5,6 +5,17 @@ import logger from '../utils/logger';
 
 const router = Router();
 
+// @route   GET /api/ai/health
+// @desc    Check AI status and list models
+router.get('/health', async (req, res) => {
+  const models = await AIService.listModels();
+  res.json({ 
+    success: true, 
+    keyDetected: !!process.env.AI_API_KEY,
+    models
+  });
+});
+
 // @route   POST /api/ai/analyze-attempt/:attemptId
 // @desc    Analyze a specific attempt
 router.post('/analyze-attempt/:attemptId', async (req, res) => {

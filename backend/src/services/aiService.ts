@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import axios from 'axios';
 import logger from '../utils/logger';
 import Question from '../models/Question';
 import { IAttempt } from '../models/Attempt';
@@ -7,6 +8,22 @@ export class AIService {
   private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
   // Using 'gemini-1.5-flash' which is the standard model name
   private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  /**
+   * Diagnostic to list available models for the current API key.
+   */
+  static async listModels() {
+    try {
+      if (!process.env.AI_API_KEY) return 'No API Key';
+      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.AI_API_KEY}`;
+      const response = await axios.get(url);
+      logger.info('Available Models fetched via Axios');
+      return response.data;
+    } catch (e: any) {
+      logger.error('Failed to list models via Axios:', e.message);
+      return { error: e.message, status: e.response?.status };
+    }
+  }
 
   /**
    * Generates a personalized analysis summary for a quiz attempt.

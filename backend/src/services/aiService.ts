@@ -5,12 +5,14 @@ import { IAttempt } from '../models/Attempt';
 
 export class AIService {
   private static genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
-  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  // Using gemini-1.5-flash-latest for broader compatibility
+  private static model = AIService.genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
   /**
    * Generates a personalized analysis summary for a quiz attempt.
    */
   static async analyzeAttempt(attempt: IAttempt): Promise<string> {
+    logger.info(`AI Key Status: ${process.env.AI_API_KEY ? 'DETECTED' : 'MISSING'}`);
     try {
       if (!process.env.AI_API_KEY) {
         return this.fallbackAnalyzeEffect(attempt);
@@ -52,6 +54,7 @@ export class AIService {
    * Generates a live, dynamic NAPLAN-style question.
    */
   static async generateQuestion(yearLevel: number, topic: string) {
+    logger.info(`AI Generation Triggered: Year ${yearLevel}, Topic ${topic} (Key: ${process.env.AI_API_KEY ? 'YES' : 'NO'})`);
     try {
       if (!process.env.AI_API_KEY) {
         return this.fallbackGetQuestion(yearLevel, topic);
@@ -96,7 +99,19 @@ export class AIService {
   }
 
   private static async fallbackGetQuestion(yearLevel: number, topic: string) {
-    const existing = await Question.findOne({ yearLevel, topic });
-    return existing;
+    // Try to get a question for the specific year level and topic first
+    let existing = await Question.findOne({ yearLevel, topic });
+    
+    // If none found (e.g., Year 5/9), try any question for that year
+    if (!existing) {
+      existing = await Question.findOne({ yearLevel });
+    }
+    
+    // If STILL nothing found, fall back to Year 3/7 as a template
+    if (!existing) {
+      existing = await Question.findOne({ topic });
+    }
+    
+    return existing || await Question.findOne(); // Absolute fallback
   }
 }

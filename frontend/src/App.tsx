@@ -9,14 +9,17 @@ import Stats from './pages/Stats'
 import Login from './pages/Login'
 import ResultAnalysis from './pages/ResultAnalysis'
 import AIPractice from './pages/AIPractice'
+import QuizPage from './pages/QuizPage'
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
-        <Route path="year3" element={<Year3Quiz />} />
-        <Route path="year7" element={<Year7Quiz />} />
+        <Route path="quiz/:yearLevel" element={<QuizPage />} />
+        {/* Legacy redirects for old paths */}
+        <Route path="year3" element={<QuizPage />} />
+        <Route path="year7" element={<QuizPage />} />
         <Route path="multiplication" element={<Multiplication />} />
         <Route path="ai-practice" element={<AIPractice />} />
         <Route path="ai-guidance" element={<AIRecommendations />} />

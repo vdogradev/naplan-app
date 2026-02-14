@@ -52,11 +52,12 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel, retakeId }) => {
       
       if (isAiMode && selectedTopic) {
         endpoint = `/ai/generate-question`;
-        // For AI mode, we might want to wrap it or handle the single question response
         const res = await api.post(endpoint, { yearLevel, topic: selectedTopic });
-        if (res.data.success) {
+        if (res.data.success && res.data.question) {
           setQuestions([res.data.question]);
           startQuiz(1);
+        } else {
+          setError('AI failed to generate a question. Please try again or check your API key.');
         }
         return;
       } else {

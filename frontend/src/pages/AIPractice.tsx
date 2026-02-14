@@ -17,9 +17,7 @@ const AIPractice = () => {
 
   const handleStart = () => {
     if (selectedYear && selectedTopic) {
-      // For now we use the year runner with a special 'ai' flag or route
-      // We'll update QuizRunner to handle this
-      navigate(`/year${selectedYear}?topic=${selectedTopic}&mode=ai`);
+      navigate(`/quiz/${selectedYear}?topic=${selectedTopic}&mode=ai`);
     }
   };
 

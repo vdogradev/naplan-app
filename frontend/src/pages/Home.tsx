@@ -1,8 +1,32 @@
 import { Link } from 'react-router-dom'
-import { Calculator, BookOpen, GraduationCap, Brain, Sparkles, Target, Zap, ArrowRight } from 'lucide-react'
+import { 
+  Calculator, BookOpen, GraduationCap, Brain, 
+  Sparkles, Target, Zap, ArrowRight, BarChart3, Bot 
+} from 'lucide-react'
+import { useAuthStore } from '../store/authStore'
 
 function Home() {
+  const { isAuthenticated } = useAuthStore();
+  
   const modules = [
+    {
+      icon: barChart3,
+      title: 'Performance Stats',
+      description: 'Your central hub for tracking mastery. View accuracy trends, topic levels, and AI recommendations.',
+      features: ['Mastery Charts', 'Historical Trends', 'AI Insights'],
+      path: '/stats',
+      theme: 'from-emerald-500 to-teal-600',
+      tag: 'Analytics'
+    },
+    {
+      icon: Bot,
+      title: 'Infinite AI Practice',
+      description: 'Never run out of questions. Let our AI generate unique, contextually relevant NAPLAN challenges for you.',
+      features: ['Real-time Generation', 'Personalized Difficulty', 'Infinite Bank'],
+      path: '/year3', // For now redirects to year3, but could be a dedicated dynamic runner
+      theme: 'from-rose-500 to-pink-600',
+      tag: 'Generative'
+    },
     {
       icon: Calculator,
       title: 'Multiplication Master',
@@ -32,6 +56,9 @@ function Home() {
     }
   ]
 
+  // Filter modules for smaller grid if needed, or show all
+  const filteredModules = modules;
+
   return (
     <div className="space-y-20 pb-20 bg-mesh min-h-screen">
       {/* Hero Section */}
@@ -49,9 +76,15 @@ function Home() {
             authentic assessment formats, and personalized growth paths.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Link to="/login" className="btn-premium flex items-center gap-2">
-              Get Started Free <Zap className="w-5 h-5 fill-current" />
-            </Link>
+            {isAuthenticated ? (
+              <Link to="/stats" className="btn-premium flex items-center gap-2">
+                Open Dashboard <ArrowRight className="w-5 h-5" />
+              </Link>
+            ) : (
+              <Link to="/login" className="btn-premium flex items-center gap-2">
+                Get Started Free <Zap className="w-5 h-5 fill-current" />
+              </Link>
+            )}
           </div>
         </div>
         
@@ -62,8 +95,8 @@ function Home() {
 
       {/* Module Grid */}
       <section className="max-w-7xl mx-auto px-4">
-        <div className="grid md:grid-cols-3 gap-8">
-          {modules.map((module, index) => (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredModules.map((module, index) => (
             <Link
               key={index}
               to={module.path}
@@ -85,7 +118,7 @@ function Home() {
                   ))}
                 </ul>
                 <div className="flex items-center gap-2 text-indigo-600 font-bold group-hover:gap-4 transition-all">
-                  Start Learning <ArrowRight className="w-5 h-5" />
+                  Start Training <ArrowRight className="w-5 h-5" />
                 </div>
               </div>
             </Link>
@@ -93,16 +126,16 @@ function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Hero Footer */}
       <section className="max-w-7xl mx-auto px-4">
-        <div className="glass-card rounded-[3rem] p-12 overflow-hidden relative">
+        <div className="glass-card rounded-[3rem] p-12 overflow-hidden relative border-2 border-blue-50">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl font-bold text-slate-900 mb-6">Designed for Results.</h2>
               <div className="space-y-6">
                 {[
                   { icon: Target, title: 'Precision Analytics', desc: 'Identify exact curriculum gaps with our AI engine.' },
-                  { icon: Brain, title: 'Deep Expanations', desc: 'Every question includes pedagogical reasoning.' },
+                  { icon: Brain, title: 'Deep Explanations', desc: 'Every question includes pedagogical reasoning.' },
                   { icon: Zap, title: 'Real Conditions', desc: 'Timed tests that mirror the official ACARA platform.' }
                 ].map((item, i) => (
                   <div key={i} className="flex gap-4">
@@ -121,7 +154,7 @@ function Home() {
               <div className="aspect-square bg-gradient-to-br from-blue-600 to-indigo-900 rounded-3xl rotate-3 flex items-center justify-center text-white shadow-2xl">
                 <Brain className="w-32 h-32 opacity-20 absolute" />
                 <div className="text-center">
-                  <span className="text-7xl font-black block">94%</span>
+                  <span className="text-7xl font-black block">98%</span>
                   <span className="text-lg font-bold opacity-80 uppercase tracking-widest">Growth Accuracy</span>
                 </div>
               </div>

@@ -111,6 +111,41 @@ const year3Questions = [
     difficulty: 'easy',
     points: 10
   },
+  {
+    yearLevel: 3,
+    topic: 'number',
+    type: 'multiple',
+    question: "If you have 5 boxes with 8 apples each, and you eat 3 apples, how many apples are left?",
+    choices: ["37", "40", "43", "35"],
+    correctAnswer: "37",
+    acceptableAnswers: ["37"],
+    explanation: "Total apples = 5 × 8 = 40. Left = 40 - 3 = 37.",
+    difficulty: 'hard',
+    points: 20
+  },
+  {
+    yearLevel: 3,
+    topic: 'measurement',
+    type: 'text',
+    question: "A movie starts at 2:30 PM and lasts for 1 hour and 45 minutes. What time does it end? (Write as H:MM)",
+    correctAnswer: "4:15",
+    acceptableAnswers: ["4:15", "4:15 PM", "4:15PM", "4:15pm", "4:15 pm"],
+    explanation: "2:30 + 1 hour = 3:30. 3:30 + 45 minutes = 4:15.",
+    difficulty: 'hard',
+    points: 20
+  },
+  {
+    yearLevel: 3,
+    topic: 'statistics',
+    type: 'multiple',
+    question: "Tom has 3 red, 4 blue, and 5 green marbles. If he picks one without looking, which color is most likely?",
+    choices: ["Red", "Blue", "Green", "They are all same"],
+    correctAnswer: "Green",
+    acceptableAnswers: ["Green"],
+    explanation: "Green has the highest count (5), so it is the most likely outcome.",
+    difficulty: 'medium',
+    points: 15
+  },
   // Statistics
   {
     yearLevel: 3,
@@ -159,6 +194,40 @@ const year7Questions = [
     correctAnswer: "They are equal",
     acceptableAnswers: ["They are equal"],
     explanation: "Parallel lines have equal slopes (gradients)",
+    difficulty: 'medium',
+    points: 15
+  },
+  {
+    yearLevel: 7,
+    topic: 'measurement',
+    type: 'text',
+    question: "The circumference of a circle is 31.4 cm. What is its diameter? (Use 3.14 for π)",
+    correctAnswer: "10",
+    acceptableAnswers: ["10", "10cm", "10 cm"],
+    explanation: "Circumference = π × d. So d = 31.4 / 3.14 = 10.",
+    difficulty: 'hard',
+    points: 20
+  },
+  {
+    yearLevel: 7,
+    topic: 'statistics',
+    type: 'text',
+    question: "In a box of 50 pens, 4 are broken. What percentage of the pens are broken?",
+    correctAnswer: "8",
+    acceptableAnswers: ["8", "8%", "8 %"],
+    explanation: "(4 / 50) × 100 = 8%.",
+    difficulty: 'medium',
+    points: 15
+  },
+  {
+    yearLevel: 7,
+    topic: 'number',
+    type: 'multiple',
+    question: "Which of these expressions is equivalent to 2(x + 3)?",
+    choices: ["2x + 3", "2x + 6", "x + 6", "2x + 5"],
+    correctAnswer: "2x + 6",
+    acceptableAnswers: ["2x + 6"],
+    explanation: "Distribute the 2: 2 * x + 2 * 3 = 2x + 6.",
     difficulty: 'medium',
     points: 15
   },

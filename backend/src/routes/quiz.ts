@@ -131,4 +131,32 @@ router.post('/submit/:attemptId', async (req, res) => {
   }
 });
 
+// @route   GET /api/quiz/retake/:attemptId
+// @desc    Get questions missed in a previous attempt
+router.get('/retake/:attemptId', async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+    const attempt = await Attempt.findById(attemptId);
+    
+    if (!attempt) {
+      return res.status(404).json({ success: false, message: 'Attempt not found' });
+    }
+
+    const missedQuestionIds = attempt.questions
+      .filter(q => !q.correct)
+      .map(q => q.questionId);
+
+    const questions = await Question.find({ _id: { $in: missedQuestionIds } });
+
+    res.json({
+      success: true,
+      count: questions.length,
+      questions
+    });
+  } catch (error) {
+    logger.error('Retake questions error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 export default router;

@@ -2,15 +2,21 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { Question } from '../types';
-import { CheckCircle2, XCircle, AlertCircle, ArrowRight, RotateCcw, Loader2, Sparkles, Trophy } from 'lucide-react';
+import { 
+  CheckCircle2, XCircle, AlertCircle, ArrowRight, 
+  RotateCcw, Loader2, Sparkles, Trophy 
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 interface QuizRunnerProps {
   yearLevel: number;
+  retakeId?: string;
 }
 
-const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
+const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel, retakeId }) => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -26,16 +32,24 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
 
   useEffect(() => {
     fetchQuestions();
-  }, [yearLevel]);
+  }, [yearLevel, retakeId]);
 
   const fetchQuestions = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get(`/quiz/questions/${yearLevel}`);
+      const endpoint = retakeId 
+        ? `/quiz/retake/${retakeId}` 
+        : `/quiz/questions/${yearLevel}`;
+        
+      const response = await api.get(endpoint);
       if (response.data.success) {
         setQuestions(response.data.questions);
-        startQuiz(response.data.questions.length);
+        if (response.data.questions.length > 0) {
+          startQuiz(response.data.questions.length);
+        } else {
+          setError('No questions found for this session.');
+        }
       } else {
         setError('Failed to load questions. Please try again.');
       }
@@ -51,8 +65,8 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
     try {
       const res = await api.post('/quiz/start', {
         userId: user?.id || 'anonymous',
-        quizType: 'naplan',
-        mode: 'practice',
+        quizType: retakeId ? 'retake' : 'naplan',
+        mode: retakeId ? 'practice' : 'full',
         totalQuestions: total
       });
       if (res.data.success) {
@@ -83,7 +97,8 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
     setResponses([...responses, {
       questionId: currentQ._id,
       userAnswer: currentQ.type === 'multiple' ? currentQ.choices![selectedChoice!] : userAnswer,
-      timeSpent
+      timeSpent,
+      correct: isCorrect
     }]);
 
     if (isCorrect) {
@@ -114,6 +129,10 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
         await api.post(`/quiz/submit/${attemptId}`, {
           answers: responses
         });
+        // Auto-navigate to result analysis after short delay
+        setTimeout(() => {
+          navigate(`/result/${attemptId}`);
+        }, 2500);
       } catch (err) {
         console.error('Failed to submit results', err);
       }
@@ -123,7 +142,9 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center p-20 space-y-4">
       <Loader2 className="w-12 h-12 text-blue-600 animate-spin" />
-      <p className="text-slate-500 font-bold text-xl animate-pulse">Initializing Assessment...</p>
+      <p className="text-slate-500 font-bold text-xl animate-pulse">
+        {retakeId ? 'Recovering Missed Questions...' : 'Initializing Assessment...'}
+      </p>
     </div>
   );
 
@@ -132,7 +153,7 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
       <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
       <h3 className="text-2xl font-bold text-red-900 mb-2">Oops!</h3>
       <p className="text-red-700 mb-6 font-medium">{error}</p>
-      <button onClick={fetchQuestions} className="btn-premium">Try Again</button>
+      <button onClick={fetchQuestions} className="px-6 py-3 bg-red-600 text-white rounded-xl font-bold">Try Again</button>
     </div>
   );
 
@@ -147,28 +168,20 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
           <div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Trophy className="w-12 h-12 text-yellow-600" />
           </div>
-          <h2 className="text-4xl font-extrabold text-slate-900 mb-2">Assessment Results</h2>
-          <p className="text-slate-500 font-medium">Great effort on completing your year {yearLevel} practice!</p>
+          <h2 className="text-4xl font-extrabold text-slate-900 mb-2">Assessment Finished</h2>
+          <p className="text-slate-500 font-medium">Redirecting you to the analysis...</p>
         </div>
         
         <div className="grid grid-cols-2 gap-6 mb-10">
           <div className="bg-blue-50 p-8 rounded-[2rem] border border-blue-100">
-            <div className="text-xs text-blue-600 font-black uppercase tracking-widest mb-2">Final Score</div>
+            <div className="text-xs text-blue-600 font-black uppercase tracking-widest mb-2">Questions</div>
             <div className="text-5xl font-black text-blue-900">{score} <span className="text-2xl text-blue-400 font-bold">/ {questions.length}</span></div>
           </div>
           <div className="bg-indigo-50 p-8 rounded-[2rem] border border-indigo-100">
             <div className="text-xs text-indigo-600 font-black uppercase tracking-widest mb-2">Accuracy</div>
-            <div className="text-5xl font-black text-indigo-900">{Math.round((score / questions.length) * 100)}%</div>
+            <div className="text-5xl font-black text-indigo-900">{Math.round((score / questions.length || 1) * 100)}%</div>
           </div>
         </div>
-
-        <button 
-          onClick={() => window.location.reload()}
-          className="btn-premium flex items-center justify-center mx-auto gap-2"
-        >
-          <RotateCcw className="w-5 h-5" />
-          New Assessment
-        </button>
       </motion.div>
     );
   }
@@ -180,7 +193,7 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
       {/* Progress Header */}
       <div className="flex justify-between items-end mb-8 px-2">
         <div>
-          <span className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] block mb-1">Section: {currentQ.topic}</span>
+          <span className="text-xs font-black text-blue-600 uppercase tracking-[0.2em] block mb-1">Section: {currentQ?.topic}</span>
           <h3 className="text-lg font-bold text-slate-400">Question {currentIndex + 1} of {questions.length}</h3>
         </div>
         <div className="text-right">
@@ -201,15 +214,14 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
         animate={{ opacity: 1, x: 0 }}
         className="bg-white rounded-[2.5rem] p-10 shadow-2xl border border-slate-100 relative overflow-hidden"
       >
-        {/* Subtle background decoration */}
         <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-50 rounded-full opacity-50"></div>
         
         <h3 className="text-3xl font-extrabold text-slate-900 mb-10 leading-tight relative z-10">
-          {currentQ.question}
+          {currentQ?.question}
         </h3>
 
         <div className="space-y-4 mb-10 relative z-10">
-          {currentQ.type === 'multiple' ? (
+          {currentQ?.type === 'multiple' ? (
             <div className="grid grid-cols-1 gap-3">
               {currentQ.choices?.map((choice, idx) => (
                 <button
@@ -270,9 +282,9 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
         <div className="flex justify-end relative z-10">
           {!feedback ? (
             <button 
-              disabled={(currentQ.type === 'multiple' && selectedChoice === null) || (currentQ.type === 'text' && !userAnswer.trim())}
+              disabled={(currentQ?.type === 'multiple' && selectedChoice === null) || (currentQ?.type === 'text' && !userAnswer.trim())}
               onClick={handleCheckAnswer}
-              className="btn-premium"
+              className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg"
             >
               Verify Answer
             </button>
@@ -281,7 +293,7 @@ const QuizRunner: React.FC<QuizRunnerProps> = ({ yearLevel }) => {
               onClick={nextQuestion}
               className="bg-slate-900 hover:bg-black text-white font-bold py-4 px-10 rounded-2xl transition-all flex items-center gap-3 shadow-xl"
             >
-              {currentIndex + 1 === questions.length ? 'See Results' : 'Next Question'}
+              {currentIndex + 1 === questions.length ? 'Finalize Results' : 'Next Question'}
               <ArrowRight className="w-5 h-5" />
             </button>
           )}

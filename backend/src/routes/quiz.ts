@@ -23,8 +23,7 @@ router.get('/questions/:yearLevel', async (req, res) => {
     if (difficulty) query.difficulty = difficulty;
 
     const questions = await Question.find(query)
-      .limit(parseInt(limit as string))
-      .select('-correctAnswer -acceptableAnswers');
+      .limit(parseInt(limit as string));
 
     res.json({
       success: true,

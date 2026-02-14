@@ -1,16 +1,14 @@
+import MultiplicationRunner from '../components/MultiplicationRunner';
+
 function Multiplication() {
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg">
-      <h1 className="text-3xl font-bold text-purple-900 mb-4">Multiplication Master</h1>
-      <p className="text-gray-600 mb-6">
-        Build multiplication fluency with configurable time limits. Perfect for all skill levels!
-      </p>
-      <div className="bg-purple-50 p-6 rounded-xl">
-        <h2 className="font-bold text-purple-900 mb-2">Coming Soon!</h2>
-        <p className="text-purple-700">
-          The multiplication practice module with configurable timers is being migrated
-          from your working HTML file.
-        </p>
+    <div className="py-8 bg-purple-50/50 min-h-screen">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="mb-8 text-center text-purple-900">
+          <h1 className="text-4xl font-extrabold mb-2">Multiplication Master</h1>
+          <p className="text-xl font-medium opacity-75">Build lightning-fast multiplication skills</p>
+        </div>
+        <MultiplicationRunner />
       </div>
     </div>
   )

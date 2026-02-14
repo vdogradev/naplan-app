@@ -9,7 +9,21 @@ import Stats from './pages/Stats'
 import Login from './pages/Login'
 import ResultAnalysis from './pages/ResultAnalysis'
 import AIPractice from './pages/AIPractice'
+import Account from './pages/Account'
+import Profile from './pages/Profile'
+import AdminDashboard from './pages/AdminDashboard'
 import QuizPage from './pages/QuizPage'
+import { Navigate } from 'react-router-dom'
+import { useAuthStore } from './store/authStore'
+
+const ProtectedRoute = ({ children, adminOnly = false }: { children: React.ReactNode, adminOnly?: boolean }) => {
+  const { isAuthenticated, user } = useAuthStore()
+  
+  if (!isAuthenticated) return <Navigate to="/login" />
+  if (adminOnly && user?.role !== 'admin' && user?.role !== 'super-admin') return <Navigate to="/" />
+  
+  return <>{children}</>
+}
 
 function App() {
   return (
@@ -17,9 +31,14 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="quiz/:yearLevel" element={<QuizPage />} />
-        {/* Legacy redirects for old paths */}
-        <Route path="year3" element={<QuizPage />} />
-        <Route path="year7" element={<QuizPage />} />
+        
+        {/* Protected Student Routes */}
+        <Route path="account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+        <Route path="profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        
+        {/* Protected Admin Routes */}
+        <Route path="admin" element={<ProtectedRoute adminOnly><AdminDashboard /></ProtectedRoute>} />
+
         <Route path="multiplication" element={<Multiplication />} />
         <Route path="ai-practice" element={<AIPractice />} />
         <Route path="ai-guidance" element={<AIRecommendations />} />

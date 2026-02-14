@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Brain, User, Settings, LogOut } from 'lucide-react'
+import { Brain, User, Settings, LogOut, Shield } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
 
 function Navigation() {
@@ -23,14 +23,31 @@ function Navigation() {
 
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
+              <div className="hidden lg:flex items-center gap-6 mr-4 border-r border-slate-100 pr-6">
+                <Link to="/profile" className="nav-link flex items-center gap-2">
+                  <User className="w-4 h-4" /> Profile
+                </Link>
+                <Link to="/account" className="nav-link flex items-center gap-2">
+                  <Settings className="w-4 h-4" /> Settings
+                </Link>
+                {(user?.role === 'admin' || user?.role === 'super-admin') && (
+                  <Link to="/admin" className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg font-bold text-xs hover:bg-indigo-100 transition-all flex items-center gap-2">
+                    <Shield className="w-4 h-4" /> Admin Console
+                  </Link>
+                )}
+              </div>
+
               <div className="hidden sm:flex flex-col items-end">
                 <span className="text-sm font-bold text-slate-900">{user?.username}</span>
-                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">Pro Plan</span>
+                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest leading-none">
+                  {user?.role || 'Student'}
+                </span>
               </div>
+              
               <button 
                 onClick={logout}
-                className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+                className="w-10 h-10 bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all flex items-center justify-center"
                 title="Logout"
               >
                 <LogOut className="w-5 h-5" />

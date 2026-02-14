@@ -1,5 +1,4 @@
 import { useParams } from 'react-router-dom';
-import Header from '../components/Header'
 import QuizRunner from '../components/QuizRunner'
 
 function Year7Quiz() {
@@ -7,7 +6,6 @@ function Year7Quiz() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header />
       <main className="container mx-auto px-4 py-12">
         <QuizRunner yearLevel={7} retakeId={attemptId} />
       </main>

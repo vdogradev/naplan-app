@@ -10,7 +10,7 @@ function Home() {
   
   const modules = [
     {
-      icon: barChart3,
+      icon: BarChart3,
       title: 'Performance Stats',
       description: 'Your central hub for tracking mastery. View accuracy trends, topic levels, and AI recommendations.',
       features: ['Mastery Charts', 'Historical Trends', 'AI Insights'],
@@ -23,7 +23,7 @@ function Home() {
       title: 'Infinite AI Practice',
       description: 'Never run out of questions. Let our AI generate unique, contextually relevant NAPLAN challenges for you.',
       features: ['Real-time Generation', 'Personalized Difficulty', 'Infinite Bank'],
-      path: '/year3', // For now redirects to year3, but could be a dedicated dynamic runner
+      path: '/year3',
       theme: 'from-rose-500 to-pink-600',
       tag: 'Generative'
     },
@@ -56,12 +56,8 @@ function Home() {
     }
   ]
 
-  // Filter modules for smaller grid if needed, or show all
-  const filteredModules = modules;
-
   return (
     <div className="space-y-20 pb-20 bg-mesh min-h-screen">
-      {/* Hero Section */}
       <section className="relative pt-20 pb-16 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-bold mb-8 animate-bounce-slow">
@@ -87,16 +83,13 @@ function Home() {
             )}
           </div>
         </div>
-        
-        {/* Animated Background Blobs */}
         <div className="absolute top-0 -left-20 w-72 h-72 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
         <div className="absolute bottom-0 -right-20 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: '2s' }}></div>
       </section>
 
-      {/* Module Grid */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredModules.map((module, index) => (
+          {modules.map((module, index) => (
             <Link
               key={index}
               to={module.path}
@@ -126,7 +119,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Hero Footer */}
       <section className="max-w-7xl mx-auto px-4">
         <div className="glass-card rounded-[3rem] p-12 overflow-hidden relative border-2 border-blue-50">
           <div className="grid md:grid-cols-2 gap-12 items-center">

@@ -6,7 +6,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   avatar: string;
-  yearLevel: 3 | 7 | null;
+  role: 'student' | 'admin' | 'super-admin';
+  yearLevel: 3 | 5 | 7 | 9 | null;
   preferences: {
     timeLimit: number;
     difficulty: 'easy' | 'medium' | 'hard';
@@ -22,6 +23,7 @@ const UserSchema: Schema = new Schema({
     required: [true, 'Username is required'],
     unique: true,
     trim: true,
+    lowercase: true,
     minlength: [2, 'Username must be at least 2 characters'],
     maxlength: [20, 'Username cannot exceed 20 characters']
   },
@@ -38,13 +40,18 @@ const UserSchema: Schema = new Schema({
     minlength: [5, 'Password must be at least 5 characters'],
     select: false
   },
+  role: {
+    type: String,
+    enum: ['student', 'admin', 'super-admin'],
+    default: 'student'
+  },
   avatar: {
     type: String,
     default: '👤'
   },
   yearLevel: {
     type: Number,
-    enum: [3, 7, null],
+    enum: [3, 5, 7, 9, null],
     default: null
   },
   preferences: {

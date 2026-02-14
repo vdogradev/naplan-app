@@ -20,16 +20,34 @@ export class AIService {
   static async listModels() {
     try {
       if (!process.env.AI_API_KEY) return 'No API Key';
-      const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.AI_API_KEY}`;
-      const response = await axios.get(url);
-      logger.info('Available Models fetched via Axios');
-      return {
-        deployVersion: 'v1.0.3-revert-legacy-v1-api',
-        data: response.data
+      
+      const results: any = {
+        deployVersion: 'v1.0.4-dual-version-check'
       };
+
+      // Check v1beta
+      try {
+        const betaUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.AI_API_KEY}`;
+        const betaRes = await axios.get(betaUrl);
+        results.v1beta = betaRes.data;
+      } catch (e: any) {
+        results.v1betaError = { message: e.message, status: e.response?.status };
+      }
+
+      // Check v1
+      try {
+        const v1Url = `https://generativelanguage.googleapis.com/v1/models?key=${process.env.AI_API_KEY}`;
+        const v1Res = await axios.get(v1Url);
+        results.v1 = v1Res.data;
+      } catch (e: any) {
+        results.v1Error = { message: e.message, status: e.response?.status };
+      }
+
+      logger.info('Diagnostic Model List completed');
+      return results;
     } catch (e: any) {
-      logger.error('Failed to list models via Axios:', e.message);
-      return { error: e.message, status: e.response?.status };
+      logger.error('Failed to list models:', e.message);
+      return { error: e.message };
     }
   }
 
